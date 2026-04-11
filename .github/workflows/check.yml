@@ -1,0 +1,31 @@
+name: CEZIH Provjera
+on:
+  schedule:
+    - cron: '0 8,16 * * *' # Ovo znaci svaki dan u 08:00 i 16:00 sati
+  workflow_dispatch:      # Ovo ti daje gumb da pokrenes rucno kad god hoces
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout koda
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: pip install requests beautifulsoup4
+
+      - name: Pokreni skriptu
+        run: python cezih.py
+
+      - name: Spremi zadnje stanje
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add zadnje_stanje.txt || echo "Nema promjene"
+          git commit -m "Azurirano stanje" || echo "Nema nista za commit"
+          git push
