@@ -9,9 +9,11 @@ jobs:
   run-script:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Preuzmi kod
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - name: Postavi Python
+        uses: actions/setup-python@v5
         with:
           python-version: '3.9'
 
@@ -25,10 +27,10 @@ jobs:
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
         run: python cezih.py
 
-      - name: Spremi stanje
+      - name: Spremi stanje (commit)
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add zadnje_stanje.txt || echo "Nema datoteke"
-          git commit -m "Update stanje" || echo "Nema promjena"
-          git push || echo "Nema se što push-ati"
+          git add zadnje_stanje.txt || echo "Nema promjene"
+          git commit -m "Update datuma" || echo "Nema promjene"
+          git push || echo "Nema promjene"
