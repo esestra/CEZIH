@@ -1,22 +1,6 @@
-name: CEZIH Provjera
-on:
-  schedule:
-    - cron: '0 8,16 * * *'
-  workflow_dispatch:
-  repository_dispatch:
-    types: [telegram_message] # Ovo omogućuje botu da se 'probudi' na poruku
-
-jobs:
-  run-script:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.9'
-      - run: pip install requests beautifulsoup4 pandas openpyxl supabase
-      - name: Pokreni skriptu
+- name: Pokreni skriptu
         env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
         run: python cezih.py
