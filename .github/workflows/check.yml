@@ -2,8 +2,8 @@ name: CEZIH Provjera
 
 on:
   schedule:
-    - cron: '0 8,16 * * *'
-  workflow_dispatch:
+    - cron: '0 8,16 * * *'  # Automatski u 8:00 i 16:00
+  workflow_dispatch:        # Omogućuje ručni klik na gumb
 
 jobs:
   run-script:
@@ -25,12 +25,13 @@ jobs:
       - name: Pokreni skriptu
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
         run: python cezih.py
 
-      - name: Spremi stanje (commit)
+      - name: Spremi novo stanje
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add zadnje_stanje.txt || echo "Nema promjene"
-          git commit -m "Update stanja" || echo "Nema promjene"
+          git commit -m "Update" || echo "Nema promjene"
           git push || echo "Nema promjene"
