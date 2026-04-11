@@ -8,6 +8,8 @@ on:
 jobs:
   run-script:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Preuzmi kod
         uses: actions/checkout@v4
@@ -18,13 +20,11 @@ jobs:
           python-version: '3.9'
 
       - name: Instaliraj module
-        run: pip install requests beautifulsoup4 pandas openpyxl supabase
+        run: pip install requests beautifulsoup4
 
       - name: Pokreni skriptu
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
         run: python cezih.py
 
       - name: Spremi stanje (commit)
@@ -32,5 +32,5 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add zadnje_stanje.txt || echo "Nema promjene"
-          git commit -m "Update datuma" || echo "Nema promjene"
+          git commit -m "Update stanja" || echo "Nema promjene"
           git push || echo "Nema promjene"
