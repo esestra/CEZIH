@@ -1,18 +1,18 @@
 name: CEZIH Provjera
 on:
   schedule:
-    - cron: '0 8,16 * * *' # Ovo znaci svaki dan u 08:00 i 16:00 sati
-  workflow_dispatch:      # Ovo ti daje gumb da pokrenes rucno kad god hoces
+    - cron: '0 8,16 * * *'
+  workflow_dispatch:
 
 jobs:
   run-script:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout koda
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.9'
 
