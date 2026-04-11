@@ -1,65 +1,47 @@
 import requests
 from bs4 import BeautifulSoup
-import os
+import time
 
 TOKEN = "8699652919:AAEssfXURTXO6v39frN-XVJrOyv-hJTPk1U"
-CHAT_ID = "7742294612"
 URL = "http://www.cezih.hr/cezih_pzz.html"
-FILE_NAME = "zadnje_stanje.txt"
 
-def provjeri():
+def dohvati_stanje():
     try:
-        r = requests.get(URL, timeout=30)
+        r = requests.get(URL, timeout=10)
         r.encoding = 'windows-1250'
         soup = BeautifulSoup(r.text, 'html.parser')
         tekst = soup.get_text()
         
-        # Traženje datuma
-        datum = "Nepoznat"
-        if "19.03.2026" in tekst:
-            datum = "19.03.2026."
-        elif "primjena od" in tekst:
-            start_pos = tekst.find("primjena od")
-            datum = tekst[start_pos+12:start_pos+23].strip()
-
-        # Učitavanje povijesti
-        povijest = []
-        if os.path.exists(FILE_NAME):
-            with open(FILE_NAME, "r", encoding="utf-8") as f:
-                povijest = [line.strip() for line in f.readlines() if line.strip()]
-
-        # Provjera je li ovo nova izmjena
-        zadnja_izmjena = povijest[0] if povijest else ""
-
-        if datum != zadnja_izmjena:
-            # NOVA IZMJENA - Šalji veliku poruku s popisom
-            izgled_poruke = (
-                f"❗❗❗ PROMJENA DETEKTIRANA ❗❗❗\n\n"
-                f"📌 NASLOV: ePomagala sustav\n"
-                f"📅 NOVI DATUM: {datum}\n"
-                f"---------------------------\n"
-                f"📂 POPIS DOKUMENATA JE DOSTUPAN NA LINKU\n\n"
-                f"🔗 Link: {URL}"
-            )
-            requests.post(f"https://api.telegram.org/bot{TOKEN}/sendMessage", 
-                          data={"chat_id": CHAT_ID, "text": izgled_poruke})
+        # Tražimo datum nakon "primjena od"
+        if "primjena od" in tekst:
+            datum = tekst.split("primjena od")[1][:12].strip()
+        else:
+            datum = "Datum nije pronađen"
             
-            # Dodaj novi datum na vrh liste
-            povijest.insert(0, datum)
-            # Čuvaj samo zadnjih 5 radi preglednosti
-            povijest = povijest[:5]
-            
-            with open(FILE_NAME, "w", encoding="utf-8") as f:
-                for d in povijest:
-                    f.write(f"{d}\n")
-        
-        # INFO PORUKA (Zadnja 3 datuma) - Šalje se samo ako pokreneš ručno ili preko linka
-        # Ovdje simuliramo "Info" ako skriptu pokreneš s dodatnim parametrom, 
-        # ali za GitHub ćemo napraviti da uvijek ispiše povijest u logove.
-        print(f"Povijest zadnjih izmjena: {povijest[:3]}")
+        return f"ℹ️ **INFO - ZADNJA IZMJENA**\n\n📅 Datum: {datum}\n📌 Naslov: ePomagala sustav\n\n🔗 Linkovi:\n• [Šifarnik pomagala](http://www.cezih.hr/sifarnici/epomagala_sifarnik.xlsx)\n• [CEZIH PZZ Stranica]({URL})"
+    except:
+        return "❌ Greška pri dohvaćanju podataka."
 
-    except Exception as e:
-        print(f"Greska: {e}")
+def slusaj():
+    offset = 0
+    print("Bot radi... Čekam tvoju poruku 'info' na Telegramu.")
+    while True:
+        try:
+            # Provjerava ima li novih poruka svakih 2 sekunde
+            r = requests.get(f"https://api.telegram.org/bot{TOKEN}/getUpdates?offset={offset}&timeout=5").json()
+            for update in r.get("result", []):
+                offset = update["update_id"] + 1
+                msg = update.get("message", {})
+                tekst_poruke = msg.get("text", "").lower()
+                chat_id = msg.get("chat", {}).get("id")
+
+                if "info" in tekst_poruke:
+                    odgovor = dohvati_stanje()
+                    requests.post(f"https://api.telegram.org/bot{TOKEN}/sendMessage", 
+                                  data={"chat_id": chat_id, "text": odgovor, "parse_mode": "Markdown"})
+        except:
+            pass
+        time.sleep(2)
 
 if __name__ == "__main__":
-    provjeri()
+    slusaj()
