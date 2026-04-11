@@ -16,11 +16,13 @@ jobs:
         with:
           python-version: '3.9'
 
-      - name: Install dependencies
+      - name: Instaliraj module
         run: pip install requests beautifulsoup4
 
       - name: Pokreni skriptu
         run: python cezih.py
+        env:
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
       - name: Spremi zadnje stanje
         run: |
